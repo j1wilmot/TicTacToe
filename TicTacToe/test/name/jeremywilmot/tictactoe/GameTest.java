@@ -33,10 +33,8 @@ public class GameTest {
 		@Before
 		public void assignPlayers() {
 			game = new Game();
-			player1 = new Player("Jim", SquareState.Player1);
-			player2 = new Player("Joe", SquareState.Player2);
-			game.setPlayer1(player1);
-			game.setPlayer2(player2);
+			player1 = new Player("Jim");
+			player2 = new Player("Joe");
 		}
 		
 		@Test

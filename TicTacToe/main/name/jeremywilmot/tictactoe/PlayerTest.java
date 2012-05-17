@@ -9,11 +9,8 @@ public class PlayerTest {
 	@Test
 	public void testCreation() {
 		String name = "Jim";
-		SquareState symbol = SquareState.Player1;
-		
-		Player player = new Player(name, symbol);
+		Player player = new Player(name);
 		assertEquals(name, player.getName());
-		assertEquals(symbol, player.getSymbol());
 	}
 
 }
