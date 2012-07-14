@@ -1,154 +1,115 @@
 package name.jeremywilmot.tictactoe;
+
 import static org.junit.Assert.*;
 
-import org.junit.experimental.runners.Enclosed;
+import name.jeremywilmot.tictactoe.Board.Position;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Enclosed.class)
+import static name.jeremywilmot.tictactoe.Board.Position.*;
+import static name.jeremywilmot.tictactoe.Board.SquareState.*;
+
 public class BoardTest {
 
-	public static class Player1 {
 
-		private Board board;
+	private Board board;
 
-		@Before
-		public void init() {
-			board = new Board();
-		}
+	@Before
+	public void init() {
+		board = new Board();
+	}
 
-		@Test
-		public void takeSquare() {
-			board.setSquare(0, true);
-			String expectedState = "X . .\n" +
-					". . .\n" +
-					". . .\n";
-			assertEquals(expectedState, board.display());
-		}
-
-		@Test(expected=IllegalStateException.class)
-		public void player1CannotTakeSameSquare() {
-			board.setSquare(0, true);
-			board.setSquare(0, true);
-		}
-
-		@Test(expected=IllegalStateException.class)
-		public void player2CannotTakeSameSquare() {
-			board.setSquare(0, false);
-			board.setSquare(0, false);
-		}
-
-		@Test(expected=IllegalStateException.class)
-		public void player1CannotTakePlayer2sSquare() {
-			board.setSquare(0, true);
-			board.setSquare(0, false);
-		}
-
-		@Test(expected=IllegalStateException.class)
-		public void player2CannotTakePlayer1sSquare() {
-			board.setSquare(0, false);
-			board.setSquare(0, true);
+	@Test
+	public void takeSquare() {
+		for (Board.Position position : Board.Position.values()) {
+			Board newBoard = board.setSquare(position, PLAYER1);
+			assertEquals(PLAYER1, newBoard.getSquare(position));
 		}
 	}
 
-	public static class GameOverWhen {
-		private Board board;
-		
-		@Before
-		public void init() {
-			board = new Board();
-		}
-
-		@Test
-		public void gameOverTop() {
-			board.setSquare(0, true);
-			board.setSquare(1, true);
-			board.setSquare(2, true);
-			assertTrue(board.gameOver());
-		}
-
-		@Test
-		public void gameOverMiddleAcross() {
-			board.setSquare(3, true);
-			board.setSquare(4, true);
-			board.setSquare(5, true);
-			assertTrue(board.gameOver());
-		}
-
-		@Test
-		public void gameOverBottom() {
-			board.setSquare(6, true);
-			board.setSquare(7, true);
-			board.setSquare(8, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void gameOverLeft() {
-			board.setSquare(0, true);
-			board.setSquare(3, true);
-			board.setSquare(6, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void gameOverMiddleDown() {
-			board.setSquare(1, true);
-			board.setSquare(4, true);
-			board.setSquare(7, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void gameOverRight() {
-			board.setSquare(2, true);
-			board.setSquare(5, true);
-			board.setSquare(8, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void gameOverRightToLeftDiagonal() {
-			board.setSquare(2, true);
-			board.setSquare(4, true);
-			board.setSquare(6, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void gameOverLeftToRightDiagonal() {
-			board.setSquare(0, true);
-			board.setSquare(4, true);
-			board.setSquare(8, true);
-			assertTrue(board.gameOver());
-		}
-		
-		@Test
-		public void allSquaresTakenWithNoVictor() {
-			board.setSquare(0, true);
-			board.setSquare(1, false);
-			board.setSquare(2, true);
-			board.setSquare(3, true);
-			board.setSquare(4, false);
-			board.setSquare(5, true);
-			board.setSquare(6, false);
-			board.setSquare(7, true);
-			board.setSquare(8, false);
-			assertTrue(board.gameOver());
-		}
+	@Test(expected=IllegalStateException.class)
+	public void playerCannotTakeSameSquare() {
+		board.setSquare(TOP_LEFT, PLAYER1)
+			.setSquare(TOP_LEFT, PLAYER1);
 	}
 
-	public static class GameNotOver {
-		@Test
-		public void gameNotOver() {
-			Board board = new Board();
-			board.setSquare(3, true);
-			board.setSquare(4, false);
-			board.setSquare(5, true);
-			assertFalse(board.gameOver());
+	@Test(expected=IllegalStateException.class)
+	public void cannotTakeOtherPlayersSquare() {
+		board.setSquare(TOP_LEFT, PLAYER1)
+			.setSquare(TOP_LEFT, PLAYER2);
+	}
+
+	public void testWinner(Position... positions) {
+		Board newBoard = board;
+		for (Position position : positions) {
+			newBoard = newBoard.setSquare(position, PLAYER1);
 		}
+		assertTrue(newBoard.hasWinner());
 	}
 	
+	@Test
+	public void gameOverTop() {
+		testWinner(TOP_LEFT, TOP_CENTER, TOP_RIGHT);
+	}
+
+	@Test
+	public void gameOverMiddleAcross() {
+		testWinner(MIDDLE_LEFT, MIDDLE_CENTER, MIDDLE_RIGHT);
+	}
+
+	@Test
+	public void gameOverBottom() {
+		testWinner(BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT);
+	}
+
+	@Test
+	public void gameOverLeft() {
+		testWinner(TOP_LEFT, MIDDLE_LEFT, BOTTOM_LEFT);
+	}
+
+	@Test
+	public void gameOverMiddleDown() {
+		testWinner(TOP_CENTER, MIDDLE_CENTER, BOTTOM_CENTER);
+	}
+
+	@Test
+	public void gameOverRight() {
+		testWinner(TOP_RIGHT, MIDDLE_RIGHT, BOTTOM_RIGHT);
+	}
+
+	@Test
+	public void gameOverRightToLeftDiagonal() {
+		testWinner(TOP_RIGHT, MIDDLE_CENTER, BOTTOM_LEFT);
+	}
+
+	@Test
+	public void gameOverLeftToRightDiagonal() {
+		testWinner(TOP_LEFT, MIDDLE_CENTER, BOTTOM_RIGHT);
+	}
+
+	@Test
+	public void allSquaresTakenWithNoVictor() {
+		Board newBoard = board.setSquare(TOP_LEFT, PLAYER1)
+			.setSquare(TOP_CENTER, PLAYER2)
+			.setSquare(TOP_RIGHT, PLAYER1)
+			.setSquare(MIDDLE_LEFT, PLAYER1)
+			.setSquare(MIDDLE_CENTER, PLAYER2)
+			.setSquare(MIDDLE_RIGHT, PLAYER1)
+			.setSquare(BOTTOM_LEFT, PLAYER2)
+			.setSquare(BOTTOM_CENTER, PLAYER1)
+			.setSquare(BOTTOM_RIGHT, PLAYER2);
+		assertFalse(newBoard.hasWinner());
+		assertTrue(newBoard.gameOver());
+	}
+
+	@Test
+	public void gameNotOver() {
+		Board newBoard = board.setSquare(MIDDLE_LEFT, PLAYER1)
+			.setSquare(MIDDLE_CENTER, PLAYER2)
+			.setSquare(MIDDLE_RIGHT, PLAYER1);
+		assertFalse(newBoard.hasWinner());
+	}
+
 
 }

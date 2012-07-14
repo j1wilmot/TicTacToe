@@ -2,16 +2,18 @@ package name.jeremywilmot.tictactoe;
 
 public class Game {
 
-	private final Board board;
+	private Board board;
+	private BoardDisplay display;
 	private Player player1;
 	private Player player2;
 	
 	Game() {
 		this.board = new Board();
+		this.display = new BoardDisplay(board);
 	}
 	
 	public String display() {
-		return board.display();
+		return display.display();
 	}
 
 	public void setPlayer1(Player player1) {
@@ -28,6 +30,11 @@ public class Game {
 
 	public Player getPlayer2() {
 		return player2;
+	}
+
+	public void run() {
+		System.out.println("Hello!");
+		
 	}
 
 }

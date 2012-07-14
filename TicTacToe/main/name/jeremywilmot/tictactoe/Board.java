@@ -1,50 +1,65 @@
 package name.jeremywilmot.tictactoe;
 
-public class Board {
+import java.util.HashMap;
+import java.util.Map;
 
-	private final SquareState[] squares = new SquareState[9];
+import static name.jeremywilmot.tictactoe.Board.Position.*;
+
+// XXX should board determine winner or is that a function of Game?
+public final class Board {
+
+	private final Map<Position, SquareState> board;
 	
 	Board() {
+		board = new HashMap<Position, SquareState>();
 		init();
 	}
 	
-	public void init() {
-		for (int i = 0; i < squares.length; i++) {
-			squares[i] = SquareState.EMPTY;
+	private void init() {
+		for (Position position : Position.values()) {
+			board.put(position, SquareState.EMPTY);
 		}
 	}
 	
-	public String display() {
-		StringBuilder output = new StringBuilder();
-		for (int i = 0; i < squares.length; i++) {
-			output.append(squares[i]);
-			if(i == 2 || i == 5 || i == 8) 
-				output.append('\n');
-			else
-				output.append(' ');
-		}
-		return 	 output.toString();
+	private Board(Map<Position, SquareState> board) {
+		this.board = board;
+	}
+	
+	/**
+	 * Sets a position to be the provided SquareState.
+	 * @throws IllegalStateExcption if position is already taken
+	 */
+	public Board setSquare(Position position, SquareState state) {
+		checkIfPositionTaken(position);
+		Map<Position, SquareState> boardCopy = new HashMap<Position, SquareState>(board);
+		boardCopy.put(position, state);
+		return new Board(boardCopy);
 	}
 
-	public void setSquare(int i, boolean player1) {
-		SquareState player = player1 ? SquareState.PLAYER1 : SquareState.PLAYER2;
-		if (squares[i] != SquareState.EMPTY)
+	private void checkIfPositionTaken(Position position) {
+		if (board.get(position) != SquareState.EMPTY)
 			throw new IllegalStateException("Player cannot take a square that has already been taken");
-		squares[i] = player;
 	}
 
-	public boolean gameOver() {
+	public SquareState getSquare(Position position) {
+		return board.get(position);
+	}
+
+	public boolean hasWinner() {
 		if (horizontalVictory() || 
 				verticalVictory() ||
-				diagonalVictory() ||
-				allSquaresTaken()) {
+				diagonalVictory()) {
 			return true;
 		}
 		return false;
 	}
 	
+	public boolean gameOver() {
+		return hasWinner() || allSquaresTaken();
+	}
+	
 	private boolean allSquaresTaken() {
-		for (SquareState state : squares) {
+		for (SquareState state : board.values()) {
 			if (state == SquareState.EMPTY)
 				return false;
 		}
@@ -52,60 +67,52 @@ public class Board {
 	}
 	
 	private boolean diagonalVictory() {
-		return squaresTakenBySamePlayer(2, 4, 6) ||
-		squaresTakenBySamePlayer(0, 4, 8);
+		return squaresTakenBySamePlayer(TOP_LEFT, MIDDLE_CENTER, BOTTOM_RIGHT) ||
+			squaresTakenBySamePlayer(BOTTOM_LEFT, MIDDLE_CENTER, TOP_RIGHT);
 	}
 
-	private boolean verticalVictory() {
-		return squaresTakenBySamePlayer(0, 3, 6) ||
-		squaresTakenBySamePlayer(1, 4, 7) ||
-		squaresTakenBySamePlayer(2, 5, 8);
-	}
-	
 	private boolean horizontalVictory() {
-		return squaresTakenBySamePlayer(0, 1, 2) || 
-				squaresTakenBySamePlayer(3, 4, 5) ||
-				squaresTakenBySamePlayer(6, 7, 8);
+		return squaresTakenBySamePlayer(TOP_LEFT, TOP_CENTER, TOP_RIGHT) ||
+				squaresTakenBySamePlayer(MIDDLE_LEFT, MIDDLE_CENTER, MIDDLE_RIGHT) ||
+				squaresTakenBySamePlayer(BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT);
 	}
 	
-	private boolean squaresTakenBySamePlayer(int firstLocation, int... locations) {
-		SquareState firstState = squares[firstLocation];
-		if (firstState == SquareState.EMPTY)
+	private boolean verticalVictory() {
+		return squaresTakenBySamePlayer(TOP_LEFT, MIDDLE_LEFT, BOTTOM_LEFT) || 
+				squaresTakenBySamePlayer(TOP_CENTER, MIDDLE_CENTER, BOTTOM_CENTER) ||
+				squaresTakenBySamePlayer(TOP_RIGHT, MIDDLE_RIGHT, BOTTOM_RIGHT);
+	}
+	
+	private boolean squaresTakenBySamePlayer(Position firstPosition, Position... positions) {
+		SquareState firstState = board.get(firstPosition);
+		if (firstState == SquareState.EMPTY) {
 			return false;
-		for (int location : locations) {
-			SquareState square = squares[location];
-			if (!square.equals(firstState))
+		}
+		for (Position position : positions) {
+			SquareState state = board.get(position);
+			if (!state.equals(firstState)) {
 				return false;
+			}
 		}
 		return true;
 	}
 	
-	public static enum SquareState {
-		PLAYER1("X"),
-		PLAYER2("Y"),
-		EMPTY(".");
-		
-		private String name;
-		
-		SquareState(String name) {
-			this.name = name;
-		}
-		
-		@Override
-		public String toString() {
-			return name;
-		}
+	public static enum Position {
+		TOP_LEFT,
+		TOP_CENTER,
+		TOP_RIGHT,
+		MIDDLE_LEFT,
+		MIDDLE_CENTER,
+		MIDDLE_RIGHT,
+		BOTTOM_LEFT,
+		BOTTOM_CENTER,
+		BOTTOM_RIGHT;
 	}
 	
-//	public static enum Position {
-//		TOP_LEFT,
-//		TOP_MIDDLE,
-//		TOP_RIGHT,
-//		MIDDLE_LEFT,
-//		MIDDLE_MIDDLE,
-//		MIDDLE_RIGHT,
-//		BOTTOM_LEFT,
-//		BOTTOM_MIDDLE,
-//		BOTTOM_RIGHT;
-//	}
+	public static enum SquareState {
+		PLAYER1,
+		PLAYER2,
+		EMPTY
+	}
+	
 }
